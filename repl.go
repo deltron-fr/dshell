@@ -65,6 +65,16 @@ func Commands() map[string]builtInCommands {
 			description: "display information about command type",
 			callback: handleType,
 		},
+		"pwd": {
+			name: "pwd",
+			description: "displays the current working directory",
+			callback: handlePWD,
+		},
+		"cd": {
+			name: "cd",
+			description: "changes the shell working directory",
+			callback: handleCD,
+		},
 	}
 
 	return commands

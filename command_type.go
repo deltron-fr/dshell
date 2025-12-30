@@ -7,7 +7,9 @@ import (
 func handleType(args ...string) {
 	availableCmds := Commands()
 	for _, arg := range args {
-		_, exists := availableCmds[arg]
+		fmt.Println(arg)
+		v, exists := availableCmds[arg]
+		fmt.Println(v.name)
 		if exists {
 			fmt.Printf("%s is a shell builtin\n", arg)
 		} else {
