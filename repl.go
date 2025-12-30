@@ -32,7 +32,7 @@ func startRepl() {
 
 		var cmd string
 		var extraArgs []string
-		args := strings.Fields(input)
+		args := parseInput(input)
 
 		cmd = args[0]
 		if len(args) > 1 {
@@ -43,7 +43,7 @@ func startRepl() {
 		if command, exists := commands[cmd]; exists {
 			command.callback(extraArgs...)
 		} else {
-			handleUnknownCommand(cmd)
+			handleExec(cmd, extraArgs...)
 		}
 	}
 }
@@ -70,8 +70,29 @@ func Commands() map[string]builtInCommands {
 	return commands
 }
 
-func handleUnknownCommand(cmd string) {
-	fmt.Printf("%s: command not found\n", cmd)
-}
+func parseInput(input string) []string {
+	var args []string
+	var current strings.Builder
 
+	inQuotes := false
+
+	for _, r := range input {
+		switch {
+		case r == '"':
+			inQuotes = !inQuotes
+		case r == ' ' && !inQuotes:
+			if current.Len() > 0 {
+				args = append(args, current.String())
+				current.Reset()
+			}
+		default:
+			current.WriteRune(r)
+		}
+	}
+	if current.Len() > 0 {
+		args = append(args, current.String())
+	}
+
+	return args
+}
 
