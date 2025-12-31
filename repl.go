@@ -7,12 +7,17 @@ import (
 	"strings"
 )
 
-type commandFunc func(...string)
+type commandFunc func(string, string, ...string)
 
 type builtInCommands struct {
 	name        string
 	description string
-	callback     commandFunc
+	callback    commandFunc
+}
+
+type RedirectionCommands struct {
+	name        string
+	description string
 }
 
 func startRepl() {
@@ -42,11 +47,36 @@ func startRepl() {
 			extraArgs = args[1:]
 		}
 
+		invalid := false
+		var redCmd RedirectionCommands
+
+		redirectCommands := Redirection()
+		for i, arg := range extraArgs {
+			if c, ok := redirectCommands[arg]; ok {
+				if i + 1 >= len(extraArgs) {
+					fmt.Println("invaid command input")
+					invalid = true
+					break
+				} else {
+					if i + 1 != len(extraArgs) - 1 {
+						fmt.Println("invalid command input, too many destination arguments")
+						break
+					}
+					redCmd = c
+				}
+			}
+		}
+		
+		if invalid {
+			continue
+		}
+
 		commands := Commands()
+		
 		if command, exists := commands[cmd]; exists {
-			command.callback(extraArgs...)
+			command.callback(command.name, redCmd.name, extraArgs...)
 		} else {
-			handleExec(cmd, extraArgs...)
+			handleExec(cmd, redCmd.name,  extraArgs...)
 		}
 	}
 }
@@ -54,33 +84,52 @@ func startRepl() {
 func Commands() map[string]builtInCommands {
 	commands := map[string]builtInCommands{
 		"exit": {
-			name: "exit",
+			name:        "exit",
 			description: "Exit the shell",
-			callback: handleExit,
+			callback:    handleExit,
 		},
 		"echo": {
-			name: "echo",
+			name:        "echo",
 			description: "display a line of text",
-			callback: handleEcho,
+			callback:    handleEcho,
 		},
 		"type": {
-			name: "type",
+			name:        "type",
 			description: "display information about command type",
-			callback: handleType,
+			callback:    handleType,
 		},
 		"pwd": {
-			name: "pwd",
+			name:        "pwd",
 			description: "displays the current working directory",
-			callback: handlePWD,
+			callback:    handlePWD,
 		},
 		"cd": {
-			name: "cd",
+			name:        "cd",
 			description: "changes the shell working directory",
-			callback: handleCD,
+			callback:    handleCD,
 		},
 	}
 
 	return commands
+}
+
+func Redirection() map[string]RedirectionCommands {
+	commands := map[string]RedirectionCommands{
+		">": {
+			name:        ">",
+			description: "Redirect standard output",
+		},
+		"1>": {
+			name: "1>",
+			description: "Redirect standard output",
+		},
+		"2>": {
+			name: "2>",
+			description: "Redirect standard error",
+		},
+	}
+	return commands
+
 }
 
 func parseInput(input string) []string {
@@ -98,8 +147,8 @@ func parseInput(input string) []string {
 		switch {
 		case inBackSlash:
 			current.WriteRune(r)
-			inBackSlash = false	
-		
+			inBackSlash = false
+
 		case r == '\\' && inQuotes && quote == '\'':
 			current.WriteRune(r)
 
@@ -143,7 +192,7 @@ func parseInput(input string) []string {
 			}
 
 		default:
-			current.WriteRune(r)	
+			current.WriteRune(r)
 		}
 	}
 
@@ -153,4 +202,3 @@ func parseInput(input string) []string {
 
 	return args
 }
-

@@ -2,24 +2,51 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 )
 
-
-func handleExec(cmd string, args ...string) {
-	isExec := checkPath(cmd, "exec")
-	if !isExec {
-		fmt.Printf("%s: command not found\n", cmd)
-		return
+func handleExec(cmd, redirection string, args ...string) {
+	if redirection == "" {
+		isExec := checkPath(cmd, "exec")
+		if !isExec {
+			fmt.Printf("%s: command not found\n", cmd)
+			return
+		}
+		commandExec(os.Stdout, os.Stderr, cmd, args...)
+		return 
 	}
-	commandExec(cmd, args...)
+
+	filepath := args[len(args)-1]
+	args = args[:len(args)-2]
+
+	switch redirection {
+	case ">", "1>":
+		file, err := os.Create(filepath)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		defer file.Close()
+
+		commandExec(file, os.Stderr, cmd, args...)
+	case "2>":
+		file, err := os.Create(filepath)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			return
+		}
+		defer file.Close()
+
+		commandExec(os.Stdout, file, cmd, args...)
+	}
 }
 
-func commandExec(cmd string, args ...string) {
+func commandExec(stdout, stderr io.Writer, cmd string, args ...string) {
 	c := exec.Command(cmd, args...)
-	c.Stdout = os.Stdout
-	c.Stderr = os.Stderr
+	c.Stdout = stdout
+	c.Stderr = stderr
 
 	err := c.Run()
 	if err != nil {

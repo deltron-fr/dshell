@@ -4,12 +4,10 @@ import (
 	"fmt"
 )
 
-func handleType(args ...string) {
+func handleType(cmdName, redirection string, args ...string) {
 	availableCmds := Commands()
 	for _, arg := range args {
-		fmt.Println(arg)
-		v, exists := availableCmds[arg]
-		fmt.Println(v.name)
+		_, exists := availableCmds[arg]
 		if exists {
 			fmt.Printf("%s is a shell builtin\n", arg)
 		} else {
@@ -17,4 +15,3 @@ func handleType(args ...string) {
 		}
 	}
 }
-

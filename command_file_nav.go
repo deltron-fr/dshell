@@ -5,8 +5,7 @@ import (
 	"os"
 )
 
-
-func handlePWD(args ...string) {
+func handlePWD(cmdName, redirection string, args ...string) {
 	path, err := os.Getwd()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "unable to get the current working directory")
@@ -15,14 +14,14 @@ func handlePWD(args ...string) {
 	fmt.Println(path)
 }
 
-func handleCD(args ...string)  {
+func handleCD(cmdName, redirection string, args ...string) {
 	if len(args) > 1 {
 		fmt.Println("too many arguments")
 		return
 	}
 
 	filePath := args[0]
-	
+
 	if filePath == "~" {
 		cdHomeDir()
 		return
@@ -33,7 +32,7 @@ func handleCD(args ...string)  {
 		fmt.Fprintf(os.Stderr, "cd: %s: No such file or directory\n", filePath)
 		return
 	}
-	
+
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return

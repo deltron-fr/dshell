@@ -2,7 +2,6 @@ package main
 
 import "os"
 
-
-func handleExit(args ...string) {
+func handleExit(cmdName, redirection string, args ...string) {
 	os.Exit(0)
 }
