@@ -7,11 +7,41 @@ import (
 
 func handlePWD(cmdName, redirection string, args ...string) {
 	path, err := os.Getwd()
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "unable to get the current working directory")
+	if redirection == "" {
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "unable to get the current working directory")
+			return
+		}
+		fmt.Println(path)
 		return
 	}
-	fmt.Println(path)
+
+	filepath := args[len(args)-1]
+
+	switch redirection {
+	case ">", "1>":
+		file, err := os.Create(filepath)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		defer file.Close()
+
+		fmt.Fprintln(file, path)
+
+	case "2>":
+		file, err := os.Create(filepath)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		defer file.Close()
+
+		_, err = fmt.Println(path)
+		if err != nil {
+			fmt.Fprintln(file, err)
+		}
+	}
 }
 
 func handleCD(cmdName, redirection string, args ...string) {

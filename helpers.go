@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func checkPath(cmdName, cmdType string) bool {
+func checkPath(f *os.File, cmdName, cmdType string) bool {
 	pathEnv := os.Getenv("PATH")
 	separator := string(os.PathListSeparator)
 
@@ -25,7 +25,7 @@ func checkPath(cmdName, cmdType string) bool {
 
 		switch cmdType {
 		case "type":
-			checkPathType(cmdName, cmdPath)
+			checkPathType(f, cmdName, cmdPath)
 			return true
 		case "exec":
 			return true
@@ -59,6 +59,14 @@ func isExecutable(path string) bool {
 	return isExec
 }
 
-func checkPathType(name, path string) {
+func checkPathType(f *os.File, name, path string) {
+	if f != nil {
+		_, err := fmt.Fprintf(f, "%s is %s\n", name, path)
+		if err != nil {
+			fmt.Fprintln(f, err)
+		}
+		return
+	}
+
 	fmt.Printf("%s is %s\n", name, path)
 }

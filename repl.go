@@ -127,6 +127,14 @@ func Redirection() map[string]RedirectionCommands {
 			name: "2>",
 			description: "Redirect standard error",
 		},
+		">>": {
+			name: ">>",
+			description: "Appending redirect standard output",
+		},
+		"1>>": {
+			name: "1>>",
+			description: "Appending redirect standard output",
+		},
 	}
 	return commands
 

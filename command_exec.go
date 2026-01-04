@@ -9,7 +9,7 @@ import (
 
 func handleExec(cmd, redirection string, args ...string) {
 	if redirection == "" {
-		isExec := checkPath(cmd, "exec")
+		isExec := checkPath(nil, cmd, "exec")
 		if !isExec {
 			fmt.Printf("%s: command not found\n", cmd)
 			return
@@ -40,6 +40,8 @@ func handleExec(cmd, redirection string, args ...string) {
 		defer file.Close()
 
 		commandExec(os.Stdout, file, cmd, args...)
+	case ">>", "1>>":
+
 	}
 }
 
