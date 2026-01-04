@@ -41,6 +41,29 @@ func handlePWD(cmdName, redirection string, args ...string) {
 		if err != nil {
 			fmt.Fprintln(file, err)
 		}
+
+	case ">>", "1>>":
+		file, err := os.OpenFile(filepath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			return
+		}
+		defer file.Close()
+
+		fmt.Fprintln(file, path)
+
+	case "2>>":
+		file, err := os.OpenFile(filepath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			return
+		}
+		defer file.Close()
+
+		_, err = fmt.Println(path)
+		if err != nil {
+			fmt.Fprintln(file, err)
+		}
 	}
 }
 

@@ -33,7 +33,7 @@ func checkPath(f *os.File, cmdName, cmdType string) bool {
 	}
 
 	if cmdType == "type" {
-		fmt.Printf("%s: not found\n", cmdName)
+		fmt.Fprintf(os.Stderr, "%s: not found\n", cmdName)
 	}
 	return false
 }

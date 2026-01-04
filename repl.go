@@ -53,12 +53,12 @@ func startRepl() {
 		redirectCommands := Redirection()
 		for i, arg := range extraArgs {
 			if c, ok := redirectCommands[arg]; ok {
-				if i + 1 >= len(extraArgs) {
+				if i+1 >= len(extraArgs) {
 					fmt.Println("invaid command input")
 					invalid = true
 					break
 				} else {
-					if i + 1 != len(extraArgs) - 1 {
+					if i+1 != len(extraArgs)-1 {
 						fmt.Println("invalid command input, too many destination arguments")
 						break
 					}
@@ -66,17 +66,17 @@ func startRepl() {
 				}
 			}
 		}
-		
+
 		if invalid {
 			continue
 		}
 
 		commands := Commands()
-		
+
 		if command, exists := commands[cmd]; exists {
 			command.callback(command.name, redCmd.name, extraArgs...)
 		} else {
-			handleExec(cmd, redCmd.name,  extraArgs...)
+			handleExec(cmd, redCmd.name, extraArgs...)
 		}
 	}
 }
@@ -120,20 +120,24 @@ func Redirection() map[string]RedirectionCommands {
 			description: "Redirect standard output",
 		},
 		"1>": {
-			name: "1>",
+			name:        "1>",
 			description: "Redirect standard output",
 		},
 		"2>": {
-			name: "2>",
+			name:        "2>",
 			description: "Redirect standard error",
 		},
 		">>": {
-			name: ">>",
+			name:        ">>",
 			description: "Appending redirect standard output",
 		},
 		"1>>": {
-			name: "1>>",
+			name:        "1>>",
 			description: "Appending redirect standard output",
+		},
+		"2>>": {
+			name:        "2>>",
+			description: "Appending redirect standard error",
 		},
 	}
 	return commands

@@ -30,38 +30,63 @@ func handleType(cmdName, redirection string, args ...string) {
 			fmt.Println(err)
 			return
 		}
-		defer file.Close()
+		typeStdoutRedirect(file, args...)
 
-		for _, arg := range args {
-			_, exists := availableCmds[arg]
-			if exists {
-				fmt.Fprintf(file, "%s is a shell builtin\n", arg)
-				fmt.Fprintf(file, "\n")
-			} else {
-				checkPath(file, arg, "type")
-				}
-			}
-		case "2>":
-			file, err := os.Create(filepath)
-			if err != nil {
-				fmt.Println(err)
-				return
-			}
-			defer file.Close()
-
-			for _, arg := range args {
-				_, exists := availableCmds[arg]
-				if exists {
-					_, err = fmt.Fprintf(file, "%s is a shell builtin\n", arg)
-					if err != nil {
-						fmt.Fprintln(file, err)
-						return
-					}
-					fmt.Fprintf(file, "\n")
-				} else {
-					checkPath(file, arg, "type")
-					}
-				}
+	case "2>":
+		file, err := os.Create(filepath)
+		if err != nil {
+			fmt.Println(err)
+			return
 		}
+		typeStderrRedirect(file, args...)
+
+	case ">>", "1>>":
+		file, err := os.OpenFile(filepath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			return
+		}
+		typeStdoutRedirect(file, args...)
+	case "2>>":
+		file, err := os.OpenFile(filepath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			return
+		}
+		typeStderrRedirect(file, args...)
+	}
 }
 
+func typeStderrRedirect(f *os.File, args ...string) {
+	availableCmds := Commands()
+
+	for _, arg := range args {
+		_, exists := availableCmds[arg]
+		if exists {
+			_, err := fmt.Fprintf(f, "%s is a shell builtin\n", arg)
+			if err != nil {
+				fmt.Fprintln(f, err)
+				return
+			}
+			fmt.Fprintf(f, "\n")
+		} else {
+			checkPath(f, arg, "type")
+		}
+	}
+	f.Close()
+}
+
+func typeStdoutRedirect(f *os.File, args ...string) {
+	availableCmds := Commands()
+
+	for _, arg := range args {
+		_, exists := availableCmds[arg]
+		if exists {
+			fmt.Fprintf(f, "%s is a shell builtin\n", arg)
+			fmt.Fprintf(f, "\n")
+		} else {
+			checkPath(f, arg, "type")
+		}
+	}
+	f.Close()
+}

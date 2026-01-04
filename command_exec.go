@@ -15,7 +15,7 @@ func handleExec(cmd, redirection string, args ...string) {
 			return
 		}
 		commandExec(os.Stdout, os.Stderr, cmd, args...)
-		return 
+		return
 	}
 
 	filepath := args[len(args)-1]
@@ -41,7 +41,24 @@ func handleExec(cmd, redirection string, args ...string) {
 
 		commandExec(os.Stdout, file, cmd, args...)
 	case ">>", "1>>":
+		file, err := os.OpenFile(filepath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			return
+		}
+		defer file.Close()
 
+		commandExec(file, os.Stderr, cmd, args...)
+
+	case "2>>":
+		file, err := os.OpenFile(filepath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			return
+		}
+		defer file.Close()
+
+		commandExec(os.Stdout, file, cmd, args...)
 	}
 }
 
