@@ -1,4 +1,4 @@
-package main
+package fs
 
 import (
 	"errors"
@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func checkPath(f *os.File, cmdName, cmdType string) bool {
+func CheckPath(f *os.File, cmdName, cmdType string) bool {
 	pathEnv := os.Getenv("PATH")
 	separator := string(os.PathListSeparator)
 

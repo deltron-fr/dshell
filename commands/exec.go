@@ -1,15 +1,17 @@
-package main
+package commands
 
 import (
 	"fmt"
 	"io"
 	"os"
 	"os/exec"
+
+	"github.com/deltron-fr/dshell/fs"
 )
 
-func handleExec(cmd, redirection string, args ...string) {
+func HandleExec(cmd, redirection string, args ...string) {
 	if redirection == "" {
-		isExec := checkPath(nil, cmd, "exec")
+		isExec := fs.CheckPath(nil, cmd, "exec")
 		if !isExec {
 			fmt.Printf("%s: command not found\n", cmd)
 			return

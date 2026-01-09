@@ -1,8 +1,10 @@
-package main
+package commands
 
 import (
 	"fmt"
 	"os"
+
+	"github.com/deltron-fr/dshell/fs"
 )
 
 func handleType(cmdName, redirection string, args ...string) {
@@ -14,7 +16,7 @@ func handleType(cmdName, redirection string, args ...string) {
 			if exists {
 				fmt.Printf("%s is a shell builtin\n", arg)
 			} else {
-				checkPath(nil, arg, "type")
+				fs.CheckPath(nil, arg, "type")
 			}
 		}
 		return
@@ -70,7 +72,7 @@ func typeStderrRedirect(f *os.File, args ...string) {
 			}
 			fmt.Fprintf(f, "\n")
 		} else {
-			checkPath(f, arg, "type")
+			fs.CheckPath(f, arg, "type")
 		}
 	}
 	f.Close()
@@ -85,7 +87,7 @@ func typeStdoutRedirect(f *os.File, args ...string) {
 			fmt.Fprintf(f, "%s is a shell builtin\n", arg)
 			fmt.Fprintf(f, "\n")
 		} else {
-			checkPath(f, arg, "type")
+			fs.CheckPath(f, arg, "type")
 		}
 	}
 	f.Close()

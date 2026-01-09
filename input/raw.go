@@ -1,4 +1,4 @@
-package main
+package input
 
 import (
 	"bufio"
@@ -10,7 +10,7 @@ import (
 	"golang.org/x/term"
 )
 
-func rawModeHandler() string {
+func RawModeHandler() string {
 	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %s\n", err)
@@ -75,7 +75,7 @@ func rawModeHandler() string {
 
 				parts := strings.Split(string(buffer), " ")
 				targetInput := parts[len(parts)-1]
-				restOfInput := autocompletion(targetInput)
+				restOfInput := autoCompletion(targetInput)
 				if len(restOfInput) == 0 {
 					continue
 				}
@@ -86,7 +86,8 @@ func rawModeHandler() string {
 					cursorPos++
 				}
 				fmt.Fprintf(os.Stdout, " ")
-				//cursorPos++
+				buffer = append(buffer, ' ')
+				cursorPos++
 			}
 		} else {
 			if cursorPos == len(buffer) {
@@ -110,78 +111,5 @@ func rawModeHandler() string {
 	return ""
 }
 
-func autocompletion(input string) []byte {
-	var cmdName string
 
-	commands := Commands()
-	for _, v := range commands {
-		if strings.HasPrefix(v.name, input) {
-			cmdName = v.name
-			break
-		}
-	}
 
-	if cmdName == "" {
-		return []byte{}
-	}
-
-	return []byte(cmdName[len(input):])
-}
-
-func autoCompleteFiles(input string) []byte {
-	pwd, err := os.Getwd()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "error getting current working directory: %v", err)
-		return []byte{}
-	}
-
-	files, err := os.ReadDir(pwd)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "error reading directory: %v", err)
-		return []byte{}
-	}
-
-	var fileName string
-	for _, f := range files {
-		if strings.HasPrefix(f.Name(), input) {
-			fileName = f.Name()
-			break
-		}
-	}
-
-	if fileName == "" {
-		return []byte{}
-	}
-
-	return []byte(fileName[len(input):])
-}
-
-func handleKeys(reader *bufio.Reader) string {
-	seq := make([]byte, 2)
-	var err error
-
-	seq[0], err = reader.ReadByte()
-	if err != nil {
-		return ""
-	}
-
-	seq[1], err = reader.ReadByte()
-	if err != nil {
-		return ""
-	}
-
-	if seq[0] == '[' {
-		switch seq[1] {
-		case 'A':
-			return "Up"
-		case 'B':
-			return "Down"
-		case 'C':
-			return "Right"
-		case 'D':
-			return "Left"
-		}
-	}
-
-	return ""
-}
