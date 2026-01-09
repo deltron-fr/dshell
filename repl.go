@@ -1,9 +1,7 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
-	"os"
 	"strings"
 )
 
@@ -25,12 +23,8 @@ func startRepl() {
 		fmt.Print("$ ")
 
 		var input string
-		scanner := bufio.NewScanner(os.Stdin)
 
-		if scanner.Scan() {
-			input = scanner.Text()
-		}
-
+		input = rawModeHandler()
 		if input == "" {
 			continue
 		}
