@@ -1,8 +1,8 @@
 package parser
 
 import (
-	"strings"
 	"fmt"
+	"strings"
 )
 
 func ParseInput(input string) []string {

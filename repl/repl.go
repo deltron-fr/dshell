@@ -2,10 +2,10 @@ package repl
 
 import (
 	"fmt"
-	
+
+	"github.com/deltron-fr/dshell/commands"
 	"github.com/deltron-fr/dshell/input"
 	"github.com/deltron-fr/dshell/parser"
-	"github.com/deltron-fr/dshell/commands"
 )
 
 func StartRepl() {
@@ -62,4 +62,3 @@ func StartRepl() {
 		}
 	}
 }
-

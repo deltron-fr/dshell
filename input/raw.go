@@ -110,6 +110,3 @@ func RawModeHandler() string {
 	}
 	return ""
 }
-
-
-

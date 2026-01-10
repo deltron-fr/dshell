@@ -1,6 +1,5 @@
 package commands
 
-
 type commandFunc func(string, string, ...string)
 
 type builtInCommands struct {
@@ -40,5 +39,3 @@ func Commands() map[string]builtInCommands {
 
 	return commands
 }
-
-

@@ -5,7 +5,6 @@ type RedirectionCommands struct {
 	Description string
 }
 
-
 func Redirection() map[string]RedirectionCommands {
 	commands := map[string]RedirectionCommands{
 		">": {

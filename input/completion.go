@@ -1,14 +1,33 @@
 package input
 
 import (
+	"fmt"
 	"os"
 	"strings"
-	"fmt"
 
 	"github.com/deltron-fr/dshell/commands"
 )
 
 func autoCompletion(input string) []byte {
+	out := autoCompleteCmds(input)
+	if len(out) != 0 {
+		return out
+	}
+
+	out = autoCompleteFiles(input)
+	if len(out) != 0 {
+		return out
+	}
+
+	out = autoCompleteCmdPath(input)
+	if len(out) != 0 {
+		return out
+	}
+
+	return []byte{}
+}
+
+func autoCompleteCmds(input string) []byte {
 	var cmdName string
 
 	commands := commands.Commands()
@@ -24,6 +43,42 @@ func autoCompletion(input string) []byte {
 	}
 
 	return []byte(cmdName[len(input):])
+}
+
+func autoCompleteCmdPath(input string) []byte {
+	pathEnv := os.Getenv("PATH")
+	separator := string(os.PathListSeparator)
+
+	directories := strings.Split(pathEnv, separator)
+	var extCmd string
+
+	for _, dir := range directories {
+		files, err := os.ReadDir(dir)
+		if err == os.ErrPermission {
+			fmt.Fprintf(os.Stderr, "insufficient permission to read directory: %v", dir)
+			continue
+		}
+
+		for _, f := range files {
+			if !f.Type().IsRegular() {
+				continue
+			}
+
+			if strings.HasPrefix(f.Name(), input) {
+				extCmd = f.Name()
+				break
+			}
+		}
+		if extCmd != "" {
+			break
+		}
+	}
+
+	if extCmd == "" {
+		return []byte{}
+	}
+
+	return []byte(extCmd[len(input):])
 }
 
 func autoCompleteFiles(input string) []byte {

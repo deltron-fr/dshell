@@ -33,6 +33,7 @@ func HandleExec(cmd, redirection string, args ...string) {
 		defer file.Close()
 
 		commandExec(file, os.Stderr, cmd, args...)
+
 	case "2>":
 		file, err := os.Create(filepath)
 		if err != nil {
@@ -42,6 +43,7 @@ func HandleExec(cmd, redirection string, args ...string) {
 		defer file.Close()
 
 		commandExec(os.Stdout, file, cmd, args...)
+
 	case ">>", "1>>":
 		file, err := os.OpenFile(filepath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
