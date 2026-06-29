@@ -3,6 +3,7 @@ package repl
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/deltron-fr/gash/internal/commands"
 	"github.com/deltron-fr/gash/internal/input"
@@ -53,7 +54,12 @@ func StartRepl() {
 			continue
 		}
 
-		pipeline, file, bg := ParsePipeline(args)
+		pipeline, file, bg, err := ParsePipeline(sh, args)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "error: %v\n", err)
+			continue
+		}
+
 		sh.Executor(pipeline, bg)
 		if file != nil {
 			file.Close()
@@ -63,7 +69,7 @@ func StartRepl() {
 
 // ParsePipeline builds a pipeline from parsed args and applies any redirections.
 // It returns the pipeline plus the last redirection file opened (if any).
-func ParsePipeline(args []string) (*shell.Pipeline, *os.File, bool) {
+func ParsePipeline(sh *shell.Shell, args []string) (*shell.Pipeline, *os.File, bool, error) {
 	pipeline := shell.NewPipeline()
 	isFirstArg := true
 	isBackgroundJob := false
@@ -93,7 +99,16 @@ func ParsePipeline(args []string) (*shell.Pipeline, *os.File, bool) {
 			isFirstArg = true
 
 		case isFirstArg:
-			cmd.Name = arg
+			fullParsedArg, err := handleParameterExpansion(sh, arg)
+			if err != nil {
+				return nil, nil, false, err
+			}
+
+			if fullParsedArg == "" {
+				continue
+			}
+
+			cmd.Name = fullParsedArg
 			isFirstArg = false
 
 		case isRedirection(arg):
@@ -105,14 +120,22 @@ func ParsePipeline(args []string) (*shell.Pipeline, *os.File, bool) {
 				}
 				f, err := r.Apply(&cmd)
 				if err != nil {
-					fmt.Fprint(os.Stderr, err)
-					return pipeline, f, isBackgroundJob
+					return pipeline, f, isBackgroundJob, err
 				}
 				i++
 			}
 
 		default:
-			cmd.Args = append(cmd.Args, arg)
+			fullParsedArg, err := handleParameterExpansion(sh, arg)
+			if err != nil {
+				return nil, nil, false, err
+			}
+
+			if fullParsedArg == "" {
+				continue
+			}
+
+			cmd.Args = append(cmd.Args, fullParsedArg)
 		}
 	}
 
@@ -120,7 +143,7 @@ func ParsePipeline(args []string) (*shell.Pipeline, *os.File, bool) {
 		pipeline.Commands = append(pipeline.Commands, cmd)
 	}
 
-	return pipeline, f, isBackgroundJob
+	return pipeline, f, isBackgroundJob, nil
 }
 
 // isRedirection reports whether a token is a supported redirection operator.
@@ -131,4 +154,74 @@ func isRedirection(token string) bool {
 	}
 
 	return true
+}
+
+func handleParameterExpansion(sh *shell.Shell, arg string) (string, error) {
+	length := len(arg)
+	var fullParsedArg strings.Builder
+	var fullIdx int
+
+	for fullIdx < length {
+
+		before, after, found := strings.Cut(arg[fullIdx:], "$")
+		if !found {
+			fullParsedArg.WriteString(before)
+			break
+		}
+
+		fullParsedArg.WriteString(before)
+		fullIdx += len(before)
+
+		newArg, idx, err := parseVariable(sh, after)
+		if err != nil {
+			return "", err
+		}
+
+		fullIdx += idx
+		fullParsedArg.WriteString(newArg)
+	}
+
+	return fullParsedArg.String(), nil
+}
+
+func parseVariable(sh *shell.Shell, arg string) (string, int, error) {
+	var parsedWord strings.Builder
+	var idx int
+
+	isClosed := false
+
+	if arg[0] != '{' {
+		return resolveVariable(sh, arg), len(arg) + 1, nil
+	}
+
+	for _, s := range arg {
+		idx++
+		if s == '{' {
+			continue
+		}
+
+		if s == '}' {
+			isClosed = true
+			break
+		}
+
+		parsedWord.WriteString(string(s))
+	}
+
+	if !isClosed {
+		return "", 0, fmt.Errorf("variable is not closed")
+	}
+
+	return resolveVariable(sh, parsedWord.String()), idx + 1, nil
+}
+
+func resolveVariable(sh *shell.Shell, name string) string {
+	v, ok := sh.EnvVariables[name]
+	if !ok {
+		name = ""
+	} else {
+		name = v
+	}
+
+	return name
 }

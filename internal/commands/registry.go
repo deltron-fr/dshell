@@ -11,6 +11,7 @@ func RegisterBuiltins(sh *shell.Shell) {
 	sh.BuiltIn["type"] = Type
 	sh.BuiltIn["jobs"] = JobsCmd
 	sh.BuiltIn["complete"] = Complete
+	sh.BuiltIn["declare"] = Declare
 }
 
 // BuiltInCommands documents builtin metadata for help output.
@@ -52,6 +53,10 @@ func Commands() map[string]BuiltInCommands {
 		"complete": {
 			Name:        "complete",
 			Description: "displays the list of builtin commands",
+		},
+		"declare": {
+			Name:        "declare",
+			Description: "can be used to create and inspect shell variables",
 		},
 	}
 

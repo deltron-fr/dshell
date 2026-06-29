@@ -72,6 +72,7 @@ type Shell struct {
 	BackgroundJobs  []*BackgroundJob
 	JobUpdates      chan BackgroundJob
 	CompleteScripts map[string]string
+	EnvVariables    map[string]string
 }
 
 // NewShell creates a shell with initialized session state.
@@ -81,6 +82,7 @@ func NewShell() *Shell {
 		History:         make([]History, 0, 100),
 		JobUpdates:      make(chan BackgroundJob, 15),
 		CompleteScripts: make(map[string]string),
+		EnvVariables:    make(map[string]string),
 	}
 }
 
